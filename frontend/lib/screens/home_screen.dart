@@ -230,35 +230,42 @@ class _HomeScreenState extends State<HomeScreen>
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Dashboard',
-                                  style: TextStyle(
-                                    color: Color(0xFF9E9EBF),
-                                    fontSize: 13,
-                                    letterSpacing: 1,
+                            CircleAvatar(
+                              radius: 28,
+                              backgroundColor: const Color(0xFF6C63FF).withOpacity(0.2),
+                              child: const Icon(Icons.person, color: Color(0xFF6C63FF), size: 30),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'VETASOFT MOBILE',
+                                    style: TextStyle(
+                                      color: Color(0xFF6C63FF),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 2,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Hola, Usuario #$userId',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
+                                  Text(
+                                    _userData['user']?.toString() ?? 'Bienvenido',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                             // Logout button
                             GestureDetector(
                               onTap: _logout,
                               child: Container(
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
                                   color: Colors.red.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(12),
@@ -268,7 +275,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 child: const Icon(
                                   Icons.logout_rounded,
                                   color: Colors.redAccent,
-                                  size: 22,
+                                  size: 20,
                                 ),
                               ),
                             ),
@@ -277,121 +284,61 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                     ),
 
-                    // Header gradient card
+                    // Services Section
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                        child: Container(
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF6C63FF), Color(0xFFE040FB)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
+                        padding: const EdgeInsets.fromLTRB(24, 28, 0, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'NUESTROS SERVICIOS',
+                              style: TextStyle(
+                                color: Color(0xFF9E9EBF),
+                                fontSize: 11,
+                                letterSpacing: 1.5,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                            borderRadius: BorderRadius.circular(22),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF6C63FF).withOpacity(0.3),
-                                blurRadius: 25,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 60,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(18),
-                                ),
-                                child: const Icon(
-                                  Icons.verified_user_rounded,
-                                  color: Colors.white,
-                                  size: 32,
-                                ),
-                              ),
-                              const SizedBox(width: 18),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              height: 240,
+                              child: ListView(
+                                scrollDirection: Axis.horizontal,
                                 children: [
-                                  const Text(
-                                    'Sesión activa',
-                                    style: TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 13,
-                                    ),
+                                  _buildServiceImageCard(
+                                    'Consultas',
+                                    'https://images.unsplash.com/photo-1576202733227-cfdd1c00713b?q=80&w=600&auto=format&fit=crop',
+                                    const Color(0xFF6C63FF),
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Rol: $role',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                  _buildServiceImageCard(
+                                    'Vacunación',
+                                    'https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?q=80&w=600&auto=format&fit=crop',
+                                    const Color(0xFFE040FB),
                                   ),
+                                  _buildServiceImageCard(
+                                    'Cirugía',
+                                    'https://images.unsplash.com/photo-1516733725897-1aa73b87c8e8?q=80&w=600&auto=format&fit=crop',
+                                    const Color(0xFF00D2FF),
+                                  ),
+                                  const SizedBox(width: 24),
                                 ],
                               ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Info cards
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'INFORMACIÓN DEL USUARIO',
-                              style: TextStyle(
-                                color: Color(0xFF9E9EBF),
-                                fontSize: 11,
-                                letterSpacing: 1.5,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                            _buildInfoCard(
-                              icon: Icons.badge_outlined,
-                              label: 'ID de Usuario',
-                              value: userId,
-                              color: const Color(0xFF6C63FF),
-                            ),
-                            const SizedBox(height: 12),
-                            _buildInfoCard(
-                              icon: Icons.admin_panel_settings_outlined,
-                              label: 'Rol',
-                              value: role,
-                              color: const Color(0xFFE040FB),
-                            ),
-                            const SizedBox(height: 12),
-                            _buildInfoCard(
-                              icon: Icons.toggle_on_outlined,
-                              label: 'Estado',
-                              value: status,
-                              color: const Color(0xFF00D2FF),
                             ),
                           ],
                         ),
                       ),
                     ),
 
-                    // Menu section
+                    // Navigation Actions
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
+                        padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'ACCIONES',
+                              'GESTIÓN',
                               style: TextStyle(
                                 color: Color(0xFF9E9EBF),
                                 fontSize: 11,
@@ -399,12 +346,12 @@ class _HomeScreenState extends State<HomeScreen>
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            const SizedBox(height: 14),
+                            const SizedBox(height: 16),
                             _buildMenuCard(
-                              icon: Icons.people_alt_outlined,
-                              title: 'Estados de Usuario',
-                              subtitle: 'Ver todos los estados disponibles',
-                              color: const Color(0xFF00D2FF),
+                              icon: Icons.analytics_outlined,
+                              title: 'Ver Status',
+                              subtitle: 'Consulta el estado actual de los usuarios',
+                              color: const Color(0xFF6C63FF),
                               onTap: () =>
                                   Navigator.pushNamed(context, '/status'),
                             ),
@@ -413,34 +360,72 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                     ),
 
-                    // Logout button bottom
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
-                        child: OutlinedButton.icon(
-                          onPressed: _logout,
-                          icon: const Icon(Icons.logout_rounded,
-                              color: Colors.redAccent),
-                          label: const Text(
-                            'Cerrar Sesión',
-                            style: TextStyle(
-                                color: Colors.redAccent,
-                                fontWeight: FontWeight.w600),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            side: BorderSide(
-                                color: Colors.redAccent.withOpacity(0.4)),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ),
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: 40),
                     ),
                   ],
                 ),
               ),
+      ),
+    );
+  }
+
+  Widget _buildServiceImageCard(String title, String imageUrl, Color color) {
+    return Container(
+      width: 180,
+      margin: const EdgeInsets.only(right: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          children: [
+            Image.network(
+              imageUrl,
+              height: 240,
+              width: 180,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                color: const Color(0xFF1A1A2E),
+                child: Center(child: Icon(Icons.pets, color: color.withOpacity(0.5))),
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withOpacity(0.8),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Align(
+                alignment: Alignment.bottomLeft,
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

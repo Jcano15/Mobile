@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 /// Servicio para comunicarse con la API Node.js en localhost:3000
 class ApiService {
-  static const String _baseUrl = 'http://localhost:3000';
+  static const String _baseUrl = 'http://localhost:3000/api_v1';
 
   /// Login — POST /apiUserLogin
   /// Retorna el token JWT si las credenciales son correctas, o lanza excepción.
@@ -61,6 +61,27 @@ class ApiService {
     } else {
       final data = jsonDecode(response.body);
       throw Exception(data['error'] ?? 'Error al obtener estados');
+    }
+  }
+
+  /// Obtiene todos los usuarios de la API — GET /apiUser
+  /// Requiere token JWT como Bearer.
+  static Future<List<Map<String, dynamic>>> getApiUsers(String token) async {
+    final uri = Uri.parse('$_baseUrl/apiUser');
+    final response = await http.get(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.cast<Map<String, dynamic>>();
+    } else {
+      final data = jsonDecode(response.body);
+      throw Exception(data['error'] ?? 'Error al obtener usuarios');
     }
   }
 }

@@ -119,19 +119,31 @@ class UserApiModel {
   async loginApiUser(req, res) {
     try {
       const { api_user, api_password } = req.body;
+      console.log('Login attempt for user:', api_user); // Debug log
+      
       let sqlQuery = "SELECT * FROM api_users WHERE Api_user= ?";
-      const [result] = await connect.query(sqlQuery, api_user);
-      //await connect.end();
-      if (result.length === 0) return res.status(400).json({ error: "user not found" });
+      const [result] = await connect.query(sqlQuery, [api_user]); // Fixed: wrap in array
+      
+      if (result.length === 0) {
+        console.log('User not found:', api_user);
+        return res.status(400).json({ error: "user not found" });
+      }
+      
       const user = result[0];
       const validPassword = await comparePassword(api_password, user.Api_password);
-      if (!validPassword) return res.status(400).json({ error: "Incorrect password" });
+      
+      if (!validPassword) {
+        console.log('Incorrect password for user:', api_user);
+        return res.status(400).json({ error: "Incorrect password" });
+      }
+      
       const token = jwt.sign({ id: user.Api_user_id, role: user.Api_role, status: user.Api_status }, process.env.JWT_SECRET, {
         expiresIn: "1h",
       });
       res.json({ token });
     } catch (error) {
-      res.status(500).json({ error: "Error deleting user", details: error.message });
+      console.error('Login error:', error);
+      res.status(500).json({ error: "Error logging in user", details: error.message });
     }
   }
 

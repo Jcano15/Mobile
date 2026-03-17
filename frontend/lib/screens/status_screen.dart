@@ -44,7 +44,8 @@ class _StatusScreenState extends State<StatusScreen>
         if (mounted) Navigator.pushReplacementNamed(context, '/login');
         return;
       }
-      final statuses = await ApiService.getUserStatuses(token);
+      // Llamamos al nuevo servicio que trae usuarios detallados
+      final statuses = await ApiService.getApiUsers(token);
       setState(() {
         _statuses = statuses;
         _isLoading = false;
@@ -235,11 +236,12 @@ class _StatusScreenState extends State<StatusScreen>
       padding: const EdgeInsets.symmetric(horizontal: 20),
       itemCount: _statuses.length,
       itemBuilder: (context, index) {
-        final status = _statuses[index];
-        final name = status['User_status_name']?.toString() ?? 'Sin nombre';
-        final description =
-            status['User_status_description']?.toString() ?? 'Sin descripción';
-        final id = status['User_status_id']?.toString() ?? '?';
+        final user = _statuses[index];
+        final name = user['Api_user']?.toString() ?? 'Sin nombre';
+        final role = user['Api_role']?.toString() ?? 'Sin rol';
+        final statusStr = user['Api_status']?.toString() ?? 'Sin estado';
+        final updatedAt = user['Updated_at']?.toString() ?? 'No disponible';
+        final id = user['Api_user_id']?.toString() ?? '?';
         final color = _colorForIndex(index);
 
         return TweenAnimationBuilder<double>(
@@ -270,63 +272,86 @@ class _StatusScreenState extends State<StatusScreen>
                 ),
               ],
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Index circle
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '#$id',
-                      style: TextStyle(
-                        color: color,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '#$id',
+                          style: TextStyle(
+                            color: color,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Rol: $role',
+                            style: const TextStyle(
+                              color: Color(0xFF9E9EBF),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: color.withOpacity(0.3)),
+                      ),
+                      child: Text(
+                        statusStr,
+                        style: TextStyle(
+                          color: color,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 5),
-                      Text(
-                        description,
-                        style: const TextStyle(
-                          color: Color(0xFF9E9EBF),
-                          fontSize: 13,
-                          height: 1.4,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(color: color.withOpacity(0.5), blurRadius: 6),
-                    ],
-                  ),
+                const SizedBox(height: 16),
+                const Divider(color: Colors.white10, height: 1),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    const Icon(Icons.update_rounded, color: Color(0xFF4A4A6A), size: 16),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Actualizado: $updatedAt',
+                      style: const TextStyle(
+                        color: Color(0xFF4A4A6A),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
