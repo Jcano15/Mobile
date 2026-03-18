@@ -84,4 +84,63 @@ class ApiService {
       throw Exception(data['error'] ?? 'Error al obtener usuarios');
     }
   }
+
+  /// Crea un nuevo estado de usuario — POST /userStatus
+  static Future<void> createUserStatus(String token, String name, String description) async {
+    final uri = Uri.parse('$_baseUrl/userStatus');
+    final response = await http.post(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'name': name,
+        'description': description,
+      }),
+    );
+
+    if (response.statusCode != 201) {
+      final data = jsonDecode(response.body);
+      throw Exception(data['error'] ?? 'Error al crear estado');
+    }
+  }
+
+  /// Actualiza un estado de usuario — PUT /userStatus/:id
+  static Future<void> updateUserStatus(String token, int id, String name, String description) async {
+    final uri = Uri.parse('$_baseUrl/userStatus/$id');
+    final response = await http.put(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'name': name,
+        'description': description,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      final data = jsonDecode(response.body);
+      throw Exception(data['error'] ?? 'Error al actualizar estado');
+    }
+  }
+
+  /// Elimina un estado de usuario — DELETE /userStatus/:id
+  static Future<void> deleteUserStatus(String token, int id) async {
+    final uri = Uri.parse('$_baseUrl/userStatus/$id');
+    final response = await http.delete(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      final data = jsonDecode(response.body);
+      throw Exception(data['error'] ?? 'Error al eliminar estado');
+    }
+  }
 }

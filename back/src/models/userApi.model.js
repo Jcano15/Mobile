@@ -137,7 +137,10 @@ class UserApiModel {
         return res.status(400).json({ error: "Incorrect password" });
       }
       
-      const token = jwt.sign({ id: user.Api_user_id, role: user.Api_role, status: user.Api_status }, process.env.JWT_SECRET, {
+      // Update status to Active (1) in database
+      await connect.query("UPDATE api_users SET Api_status = 1 WHERE Api_user_id = ?", [user.Api_user_id]);
+      
+      const token = jwt.sign({ id: user.Api_user_id, role: user.Api_role, status: 1 }, process.env.JWT_SECRET, {
         expiresIn: "1h",
       });
       res.json({ token });

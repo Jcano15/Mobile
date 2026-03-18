@@ -60,12 +60,12 @@ user statuses from the database. Here's a breakdown of what it does: */
       if (!name || !description) {
         return res.status(400).json({ error: "Missing required fields" });
       }
-      let sqlQuery = "UPDATE user_status SET User_status_name=?,User_status_description=?,update_at=? WHERE User_status_id = ?";
-      const update_at = new Date().toLocaleString("en-CA", { timeZone: "America/Bogota" }).replace(",", "").replace("/", "-").replace("/", "-");
-      const [result] = await connect.query(sqlQuery, [name, description, update_at, req.params.id]);
+      let sqlQuery = "UPDATE user_status SET User_status_name=?,User_status_description=?,updated_at=? WHERE User_status_id = ?";
+      const updated_at = new Date().toLocaleString("en-CA", { timeZone: "America/Bogota" }).replace(",", "").replace("/", "-").replace("/", "-");
+      const [result] = await connect.query(sqlQuery, [name, description, updated_at, req.params.id]);
       if (result.affectedRows === 0) return res.status(404).json({ error: "User Status not found" });
       res.status(200).json({
-        data: [{ name, description, update_at }],
+        data: [{ name, description, updated_at }],
         status: 200,
         updated: result.affectedRows
       });

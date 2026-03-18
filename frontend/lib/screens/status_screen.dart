@@ -44,8 +44,8 @@ class _StatusScreenState extends State<StatusScreen>
         if (mounted) Navigator.pushReplacementNamed(context, '/login');
         return;
       }
-      // Llamamos al nuevo servicio que trae usuarios detallados
-      final statuses = await ApiService.getApiUsers(token);
+      // Llamamos al servicio que trae los estados de la tabla user_status
+      final statuses = await ApiService.getUserStatuses(token);
       setState(() {
         _statuses = statuses;
         _isLoading = false;
@@ -57,6 +57,141 @@ class _StatusScreenState extends State<StatusScreen>
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _showStatusDialog({Map<String, dynamic>? status}) async {
+    final isEditing = status != null;
+    final nameController = TextEditingController(
+        text: isEditing ? status['User_status_name']?.toString() : '');
+    final descController = TextEditingController(
+        text: isEditing ? status['User_status_description']?.toString() : '');
+
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A2E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          isEditing ? 'Editar Estado' : 'Nuevo Estado',
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              style: const TextStyle(color: Colors.white),
+              decoration: _inputDecoration('Nombre del estado'),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: descController,
+              style: const TextStyle(color: Colors.white),
+              maxLines: 3,
+              decoration: _inputDecoration('Descripción'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar', style: TextStyle(color: Color(0xFF9E9EBF))),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final name = nameController.text.trim();
+              final desc = descController.text.trim();
+              if (name.isEmpty || desc.isEmpty) return;
+
+              try {
+                final token = await AuthService.getToken();
+                if (token == null) return;
+
+                if (isEditing) {
+                  await ApiService.updateUserStatus(
+                    token,
+                    status['User_status_id'],
+                    name,
+                    desc,
+                  );
+                } else {
+                  await ApiService.createUserStatus(token, name, desc);
+                }
+
+                if (mounted) {
+                  Navigator.pop(context);
+                  _loadStatuses();
+                }
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: $e'), backgroundColor: Colors.redAccent),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6C63FF),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: Text(isEditing ? 'Actualizar' : 'Crear', style: const TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmDelete(int id, String name) async {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A2E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Eliminar Estado', style: TextStyle(color: Colors.white)),
+        content: Text('¿Estás seguro de que deseas eliminar el estado "$name"?',
+            style: const TextStyle(color: Color(0xFF9E9EBF))),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar', style: TextStyle(color: Color(0xFF9E9EBF))),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                final token = await AuthService.getToken();
+                if (token == null) return;
+                await ApiService.deleteUserStatus(token, id);
+                if (mounted) {
+                  Navigator.pop(context);
+                  _loadStatuses();
+                }
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: $e'), backgroundColor: Colors.redAccent),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            child: const Text('Eliminar', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: Color(0xFF9E9EBF)),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF4A4A6A)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF6C63FF)),
+      ),
+      filled: true,
+      fillColor: const Color(0xFF0F0F1A),
+    );
   }
 
   // Assign a color from palette based on index
@@ -106,7 +241,7 @@ class _StatusScreenState extends State<StatusScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Estados de Usuario',
+                          'Gestión de Estados',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -123,9 +258,9 @@ class _StatusScreenState extends State<StatusScreen>
                       ],
                     ),
                   ),
-                  // Refresh button
+                  // Add button
                   GestureDetector(
-                    onTap: _isLoading ? null : _loadStatuses,
+                    onTap: () => _showStatusDialog(),
                     child: Container(
                       width: 42,
                       height: 42,
@@ -135,8 +270,25 @@ class _StatusScreenState extends State<StatusScreen>
                         border: Border.all(
                             color: const Color(0xFF6C63FF).withOpacity(0.3)),
                       ),
+                      child: const Icon(Icons.add_rounded,
+                          color: Color(0xFF6C63FF), size: 24),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Refresh button
+                  GestureDetector(
+                    onTap: _isLoading ? null : _loadStatuses,
+                    child: Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1A1A2E),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            color: const Color(0xFF9E9EBF).withOpacity(0.2)),
+                      ),
                       child: const Icon(Icons.refresh_rounded,
-                          color: Color(0xFF6C63FF), size: 20),
+                          color: Colors.white, size: 20),
                     ),
                   ),
                 ],
@@ -216,15 +368,25 @@ class _StatusScreenState extends State<StatusScreen>
   }
 
   Widget _buildEmpty() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.inbox_outlined, color: Color(0xFF4A4A6A), size: 64),
-          SizedBox(height: 16),
-          Text(
-            'Sin datos',
+          const Icon(Icons.inbox_outlined, color: Color(0xFF4A4A6A), size: 64),
+          const SizedBox(height: 16),
+          const Text(
+            'Sin estados registrados',
             style: TextStyle(color: Color(0xFF9E9EBF), fontSize: 16),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: () => _showStatusDialog(),
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('Crear primer estado'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6C63FF),
+              foregroundColor: Colors.white,
+            ),
           ),
         ],
       ),
@@ -236,12 +398,11 @@ class _StatusScreenState extends State<StatusScreen>
       padding: const EdgeInsets.symmetric(horizontal: 20),
       itemCount: _statuses.length,
       itemBuilder: (context, index) {
-        final user = _statuses[index];
-        final name = user['Api_user']?.toString() ?? 'Sin nombre';
-        final role = user['Api_role']?.toString() ?? 'Sin rol';
-        final statusStr = user['Api_status']?.toString() ?? 'Sin estado';
-        final updatedAt = user['Updated_at']?.toString() ?? 'No disponible';
-        final id = user['Api_user_id']?.toString() ?? '?';
+        final status = _statuses[index];
+        final name = status['User_status_name']?.toString() ?? 'Sin nombre';
+        final desc = status['User_status_description']?.toString() ?? 'Sin descripción';
+        final updatedAt = status['updated_at']?.toString() ?? 'No disponible';
+        final id = status['User_status_id'];
         final color = _colorForIndex(index);
 
         return TweenAnimationBuilder<double>(
@@ -309,30 +470,24 @@ class _StatusScreenState extends State<StatusScreen>
                             ),
                           ),
                           Text(
-                            'Rol: $role',
+                            desc,
                             style: const TextStyle(
                               color: Color(0xFF9E9EBF),
                               fontSize: 13,
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: color.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: color.withOpacity(0.3)),
-                      ),
-                      child: Text(
-                        statusStr,
-                        style: TextStyle(
-                          color: color,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                    IconButton(
+                      icon: const Icon(Icons.edit_rounded, color: Color(0xFF6C63FF), size: 20),
+                      onPressed: () => _showStatusDialog(status: status),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
+                      onPressed: () => _confirmDelete(id as int, name),
                     ),
                   ],
                 ),
